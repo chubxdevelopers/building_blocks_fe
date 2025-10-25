@@ -1,6 +1,8 @@
 import React from "react";
 import AddCapability from "./pages/admin/AddCapability";
 import AdminRegister from "./pages/admin/AdminRegister";
+import Login from "./pages/auth/Login";
+import SelectCompany from "./pages/auth/SelectCompany";
 import AddUser from "./pages/admin/AddUser";
 import RoleMapping from "./pages/admin/RoleMapping";
 import AdminLayout from "./layouts/AdminLayout";
@@ -47,7 +49,14 @@ function App() {
       <AuthProvider>
         <Router>
           <Routes>
-            {/* Admin area is nested under /:company/:app/admin so the URL always contains slugs */}
+            {/* Public routes with slugs */}
+            <Route path="/:company/:app/login" element={<Login />} />
+            <Route
+              path="/:company/:app/admin/register"
+              element={<AdminRegister />}
+            />
+
+            {/* Protected admin routes with slugs */}
             <Route
               path="/:company/:app/admin"
               element={
@@ -62,13 +71,16 @@ function App() {
               <Route path="roles/mapping" element={<RoleMapping />} />
             </Route>
 
-            {/* Register (public) under the same sluged path */}
+            {/* Company/App Selection */}
+            <Route path="/select-company" element={<SelectCompany />} />
+
+            {/* Root redirect to company selection */}
             <Route
-              path="/:company/:app/admin/register"
-              element={<AdminRegister />}
+              path="/"
+              element={<Navigate to="/select-company" replace />}
             />
 
-            {/* Fallback: try to redirect to the current slugs extracted from pathname */}
+            {/* 404 catch-all */}
             <Route
               path="*"
               element={
@@ -79,7 +91,7 @@ function App() {
                     );
                     return company && app
                       ? `/${company}/${app}/admin`
-                      : "/admin/register";
+                      : "/login";
                   })()}
                   replace
                 />

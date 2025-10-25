@@ -73,3 +73,27 @@ instance.interceptors.response.use(
 );
 
 export default instance;
+
+// Helper to build a full API URL for cases where we need to bypass the
+// axios instance baseURL (for example on the login page before interceptors
+// or when we want to ensure the request goes to a specific company/app).
+export function buildFullApiUrl(path: string) {
+  // normalize path
+  const p = path.startsWith("/") ? path : `/${path}`;
+  let company = "";
+  let app = "";
+  try {
+    const parts = window.location.pathname.split("/").filter(Boolean);
+    if (parts.length >= 2) {
+      company = parts[0];
+      app = parts[1];
+    }
+  } catch (e) {
+    // ignore in non-browser environments
+  }
+
+  const host = API_HOST;
+  if (company && app) return `${host}/api/${company}/${app}${p}`;
+  if (company && !app) return `${host}/api/${company}${p}`;
+  return `${host}/api${p}`;
+}

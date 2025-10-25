@@ -1,9 +1,10 @@
 import "@mui/material/styles";
 import { useState } from "react";
-import { Outlet, useNavigate } from "react-router-dom";
+import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import {
   AppBar,
   Box,
+  Button,
   CssBaseline,
   Drawer,
   IconButton,
@@ -21,13 +22,17 @@ import {
   Category,
   Security,
   SwapHoriz,
+  ExitToApp,
 } from "@mui/icons-material";
+import { useAuth } from "../contexts/AuthContext";
 
 const drawerWidth = 240;
 
 export default function AdminLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const { logout } = useAuth();
 
   const menuItems = [
     { text: "Dashboard", icon: <Dashboard />, path: "/admin" },
@@ -76,9 +81,19 @@ export default function AdminLayout() {
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" noWrap component="div">
+          <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
             Admin Panel
           </Typography>
+          <Button
+            color="inherit"
+            onClick={() => {
+              logout();
+              navigate("/login");
+            }}
+            startIcon={<ExitToApp />}
+          >
+            Logout
+          </Button>
         </Toolbar>
       </AppBar>
       <Box
