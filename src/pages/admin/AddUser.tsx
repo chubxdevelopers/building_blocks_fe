@@ -11,11 +11,11 @@ import {
   Select,
   MenuItem,
   CircularProgress,
-  Box,
 } from "@mui/material";
 import { useFormik } from "formik";
 import * as yup from "yup";
-import api from "../../utils/axiosConfig";
+import api, { buildPublicApiUrl } from "../../utils/axiosConfig";
+// import { useAuth } from "../../contexts/AuthContext";
 
 interface Company {
   id: number;
@@ -60,17 +60,15 @@ export default function AddUser() {
       setLoading(true);
       try {
         const [companiesRes, teamsRes, rolesRes] = await Promise.all([
-          api.get<Company[]>("/admin/companies"),
-          api.get<Team[]>("/admin/teams"),
-          api.get<Role[]>("/admin/roles"),
+          api.get<Company[]>(buildPublicApiUrl("/companies")),
+          api.get<Team[]>(buildPublicApiUrl("/teams")),
+          api.get<Role[]>(buildPublicApiUrl("/roles")),
         ]);
         setCompanies(companiesRes.data);
         setTeams(teamsRes.data);
         setRoles(rolesRes.data);
       } catch (err: any) {
-        setError(
-          "Failed to load companies, teams, or roles. Please try again."
-        );
+        setError("Failed to load companies, teams, or roles. Please try again.");
       } finally {
         setLoading(false);
       }
@@ -100,7 +98,7 @@ export default function AddUser() {
       setError("");
       setSuccess("");
       try {
-        const response = await api.post("/admin/add-user", values);
+        const response = await api.post(`/admin/add-user`, values);
         if (response.data) {
           setSuccess("User added successfully!");
           formik.resetForm();
@@ -124,6 +122,11 @@ export default function AddUser() {
             {error}
           </Alert>
         )}
+            {!error && !loading && companies.length === 0 && (
+              <Alert severity="info" sx={{ mb: 2 }}>
+                No companies available
+              </Alert>
+            )}
         {success && (
           <Alert severity="success" sx={{ mb: 2 }}>
             {success}

@@ -36,7 +36,7 @@ export default function AddCapability() {
       try {
         // load features via admin GET; backend will expose /features (added server-side)
         const response = await api.get<Feature[]>("/admin/features");
-        setFeatures(response.data);
+        setFeatures(response.data || []);
       } catch (err: any) {
         setError("Failed to load features");
       }
@@ -94,6 +94,11 @@ export default function AddCapability() {
           >
             <FormLabel component="legend">Select Features</FormLabel>
             <FormGroup>
+              {features.length === 0 && (
+                <Typography variant="body2" sx={{ mb: 1 }}>
+                  No features available
+                </Typography>
+              )}
               {features.map((feature: any) => (
                 <FormControlLabel
                   key={feature.id}

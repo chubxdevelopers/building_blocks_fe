@@ -1,41 +1,33 @@
 import axios from "axios";
 
-// Build baseURL using Vite env variables if provided. This allows setting
-// company/app slugs via environment for multi-tenant requests.
+// Build baseURL for multi-tenant requests
+export const API_HOST = import.meta.env.VITE_API_HOST || "http://localhost:4000";
 
-// Build baseURL using Vite env variables OR extract slugs directly from
-// the browser URL path. The frontend must be accessed under a path that
-// includes the company and app slug in the first two segments so we can
-// derive them automatically (e.g. https://fe-host/<company>/<app>/admin/...)
-const API_HOST = import.meta.env.VITE_API_HOST || "http://localhost:4000";
-const ENV_COMPANY = import.meta.env.VITE_COMPANY_SLUG || "";
-const ENV_APP = import.meta.env.VITE_APP_SLUG || "";
-
-// Try to extract slugs from the browser location first. We expect the
-// frontend to be accessed like: /<company>/<app>/... so the first two
-// pathname segments are company and app.
-let companyFromPath = "";
-let appFromPath = "";
-try {
-  const parts = window.location.pathname.split("/").filter(Boolean);
-  if (parts.length >= 2) {
-    companyFromPath = parts[0];
-    appFromPath = parts[1];
+// Extract company and app slugs from the URL path
+function extractSlugs() {
+  try {
+    const parts = window.location.pathname.split("/").filter(Boolean);
+    // The URL pattern should be /:company/:app/...
+    if (parts.length >= 2) {
+      return {
+        company: parts[0],
+        app: parts[1],
+      };
+    }
+  } catch (e) {
+    console.error("Error extracting company/app from path:", e);
   }
-} catch (e) {
-  // window may not be available in some test environments - ignore
+  return { company: null, app: null };
 }
 
-// Prefer slugs from the browser URL (as user requested). Fall back to env vars.
-const COMPANY = companyFromPath || ENV_COMPANY;
-const APP = appFromPath || ENV_APP;
+const { company: companySlug, app: appSlug } = extractSlugs();
 
-let baseURL = `${API_HOST}/api`;
-if (COMPANY && APP) {
-  baseURL = `${API_HOST}/api/${COMPANY}/${APP}`;
-} else if (COMPANY && !APP) {
-  baseURL = `${API_HOST}/api/${COMPANY}`;
-}
+
+// Set baseURL to include company and app slugs if available
+const baseURL =
+  companySlug && appSlug
+    ? `${API_HOST}/api/${companySlug}/${appSlug}`
+    : `${API_HOST}/api`;
 
 const instance = axios.create({
   baseURL,
@@ -64,9 +56,15 @@ instance.interceptors.request.use(
 instance.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response.status === 401) {
+    if (error.response && error.response.status === 401) {
       localStorage.removeItem("token");
-      window.location.href = "/admin/register";
+      const { company, app } = extractSlugs();
+      // Redirect to frontend login, not backend API path
+      if (company && app) {
+        window.location.href = `/${company}/${app}/login`;
+      } else {
+        window.location.href = `/select-company`;
+      }
     }
     return Promise.reject(error);
   }
@@ -74,26 +72,24 @@ instance.interceptors.response.use(
 
 export default instance;
 
-// Helper to build a full API URL for cases where we need to bypass the
-// axios instance baseURL (for example on the login page before interceptors
-// or when we want to ensure the request goes to a specific company/app).
+// Helper to build a full API URL for direct requests
 export function buildFullApiUrl(path: string) {
   // normalize path
   const p = path.startsWith("/") ? path : `/${path}`;
-  let company = "";
-  let app = "";
-  try {
-    const parts = window.location.pathname.split("/").filter(Boolean);
-    if (parts.length >= 2) {
-      company = parts[0];
-      app = parts[1];
-    }
-  } catch (e) {
-    // ignore in non-browser environments
-  }
+  const { company, app } = extractSlugs();
 
-  const host = API_HOST;
-  if (company && app) return `${host}/api/${company}/${app}${p}`;
-  if (company && !app) return `${host}/api/${company}${p}`;
-  return `${host}/api${p}`;
+  // Build the full URL with proper company/app context
+  const url =
+    company && app
+      ? `${API_HOST}/api/${company}/${app}${p}`
+      : `${API_HOST}/api${p}`;
+
+  console.log("Building API URL:", { company, app, path: p, url });
+  return url;
+}
+
+// Helper to build a public API URL that ignores slugs
+export function buildPublicApiUrl(path: string) {
+  const p = path.startsWith("/") ? path : `/${path}`;
+  return `${API_HOST}/api/public${p}`;
 }

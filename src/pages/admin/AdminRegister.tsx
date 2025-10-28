@@ -57,11 +57,19 @@ export default function AdminRegister() {
         if (response.data) {
           setSuccess("Registration successful!");
           setError("");
-          login(response.data.token, response.data.user);
+          const companySlug = response.data.company.slug;
+          const appSlug = response.data.app.slug;
+          login(
+            response.data.token,
+            response.data.user,
+            companySlug,
+            appSlug
+          );
           navigate(from, { replace: true });
         }
       } catch (err: any) {
         setError(err.response?.data?.message || "Registration failed");
+        console.log(api)
         console.log(err);
         setSuccess("");
       }

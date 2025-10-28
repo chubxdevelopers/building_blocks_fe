@@ -49,8 +49,8 @@ export default function RoleMapping() {
           api.get("/admin/roles"),
           api.get("/admin/capabilities"),
         ]);
-        setRoles(rolesResponse.data);
-        setCapabilities(capabilitiesResponse.data);
+        setRoles(rolesResponse.data || []);
+        setCapabilities(capabilitiesResponse.data || []);
       } catch (err: any) {
         setError("Failed to load data");
       }
@@ -132,6 +132,11 @@ export default function RoleMapping() {
               onChange={formik.handleChange}
               label="Select Role"
             >
+              {roles.length === 0 && (
+                <MenuItem disabled value="">
+                  No roles available
+                </MenuItem>
+              )}
               {roles.map((role) => (
                 <MenuItem key={role.id} value={role.name}>
                   {role.name}
@@ -145,6 +150,11 @@ export default function RoleMapping() {
           </Typography>
           <Box sx={{ mb: 3 }}>
             <Grid container spacing={1}>
+              {capabilities.length === 0 && (
+                <Typography variant="body2" sx={{ pl: 1 }}>
+                  No capabilities available
+                </Typography>
+              )}
               {capabilities.map((capability) => (
                 <Grid
                   key={capability.id}

@@ -12,8 +12,9 @@ import {
 import { useFormik } from "formik";
 import * as yup from "yup";
 import { useNavigate, useLocation, Link as RouterLink } from "react-router-dom";
-import api from "../../utils/axiosConfig";
+import api, { buildFullApiUrl } from "../../utils/axiosConfig";
 import { useAuth } from "../../contexts/AuthContext";
+import { Cookie } from "@mui/icons-material";
 
 const validationSchema = yup.object({
   email: yup
@@ -35,13 +36,24 @@ export default function Login() {
   // which the server treats as a company slug and returns "Company not found: auth".
   useEffect(() => {
     try {
+
       const parts = window.location.pathname.split("/").filter(Boolean);
+
       // Expect the path to be /:company/:app/... when scoped. If not present,
       // redirect to the company selection page.
       if (parts.length < 2) {
+        console.log(
+          "Missing company/app context, redirecting to select-company"
+        );
         navigate("/select-company", { replace: true });
+      } else {
+        console.log("Company/App context found:", {
+          company: parts[0],
+          app: parts[1],
+        });
       }
     } catch (e) {
+      console.log("Error checking path:", e);
       // ignore in non-browser environments
     }
   }, [navigate]);
@@ -54,23 +66,19 @@ export default function Login() {
     validationSchema: validationSchema,
     onSubmit: async (values) => {
       try {
-        // POST to the auth route under the current company/app context
-        const response = await api.post("/auth/login", values);
-        if (response.data) {
-          login(response.data.token, response.data.user);
-          // Redirect based on role
-          const role = response.data.user.role;
-          let redirectPath;
-          if (role === "admin") {
-            redirectPath = "/admin/dashboard";
-          } else if (role === "user") {
-            redirectPath = "/dashboard";
-          } else if (role === "manager") {
-            redirectPath = "/manager/dashboard";
-          } else {
-            redirectPath = from;
-          }
-          navigate(redirectPath, { replace: true });
+        // POST to the login route under the current company/app context
+        // Build absolute URL to ensure company/app slugs are included
+        const fullUrl = buildFullApiUrl("/login");
+        console.log("Submitting login to:", fullUrl);
+        const response = await api.post(fullUrl, values);
+
+        if (response.data.token) {
+          const parts = window.location.pathname.split("/").filter(Boolean);
+          const companySlug = parts[0];
+          const appSlug = parts[1];
+          login(response.data.token, response.data.user, companySlug, appSlug);
+          const dashboardRoute = response.data.dashboardRoute || `/${companySlug}/${appSlug}/admin/dashboard`;
+          navigate(dashboardRoute, { replace: true });
         }
       } catch (err: any) {
         setError(err.response?.data?.message || "Login failed");

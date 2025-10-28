@@ -4,6 +4,7 @@ import AdminRegister from "./pages/admin/AdminRegister";
 import Login from "./pages/auth/Login";
 import SelectCompany from "./pages/auth/SelectCompany";
 import AddUser from "./pages/admin/AddUser";
+import AddFeature from "./pages/admin/AddFeature";
 import RoleMapping from "./pages/admin/RoleMapping";
 import AdminLayout from "./layouts/AdminLayout";
 import Dashboard from "./pages/admin/Dashboard";
@@ -35,7 +36,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
   if (!isAuthenticated) {
     const redirectTo =
-      company && app ? `/${company}/${app}/admin/register` : `/admin/register`;
+      company && app ? `/${company}/${app}/login` : `/`;
     return <Navigate to={redirectTo} state={{ from: location }} replace />;
   }
 
@@ -58,7 +59,7 @@ function App() {
 
             {/* Protected admin routes with slugs */}
             <Route
-              path="/:company/:app/admin"
+              path="/:company/:app/admin/dashboard"
               element={
                 <ProtectedRoute>
                   <AdminLayout />
@@ -66,9 +67,10 @@ function App() {
               }
             >
               <Route index element={<Dashboard />} />
-              <Route path="capabilities/add" element={<AddCapability />} />
-              <Route path="users/add" element={<AddUser />} />
-              <Route path="roles/mapping" element={<RoleMapping />} />
+              <Route path="/:company/:app/admin/dashboard/capabilities-add" element={<AddCapability />} />
+              <Route path="/:company/:app/admin/dashboard/add-feature" element={<AddFeature />} />
+              <Route path="/:company/:app/admin/dashboard/add-user" element={<AddUser />} />
+              <Route path="/:company/:app/admin/dashboard/roles-mapping" element={<RoleMapping />} />
             </Route>
 
             {/* Company/App Selection */}
@@ -81,22 +83,15 @@ function App() {
             />
 
             {/* 404 catch-all */}
-            <Route
+            {/* <Route
               path="*"
               element={
-                <Navigate
-                  to={(() => {
-                    const { company, app } = getSlugsFromPathname(
-                      window.location.pathname
-                    );
-                    return company && app
-                      ? `/${company}/${app}/admin`
-                      : "/login";
-                  })()}
-                  replace
-                />
+                <div style={{ padding: "2rem" }}>
+                  <h1>404 - Not Found</h1>
+                  <p>The page you are looking for does not exist.</p>
+                </div>
               }
-            />
+            /> */}
           </Routes>
         </Router>
       </AuthProvider>

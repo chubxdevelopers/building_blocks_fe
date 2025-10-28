@@ -34,16 +34,23 @@ export default function AdminLayout() {
   const location = useLocation();
   const { logout } = useAuth();
 
+  const buildPath = (suffix: string) => {
+    const parts = window.location.pathname.split("/").filter(Boolean);
+    const companySlug = parts[0];
+    const appSlug = parts[1];
+    return `/${companySlug}/${appSlug}${suffix}`;
+  };
+
   const menuItems = [
-    { text: "Dashboard", icon: <Dashboard />, path: "/admin" },
-    { text: "Add User", icon: <PersonAdd />, path: "/admin/users/add" },
-    { text: "Add Feature", icon: <Category />, path: "/admin/features/add" },
+    { text: "Dashboard", icon: <Dashboard />, path: buildPath("/admin/dashboard") },
+    { text: "Add User", icon: <PersonAdd />, path: buildPath("/admin/dashboard/add-user") },
+    { text: "Add Feature", icon: <Category />, path: buildPath("/admin/dashboard/add-feature") },
     {
       text: "Add Capability",
       icon: <Security />,
-      path: "/admin/capabilities/add",
+      path: buildPath("/admin/dashboard/capabilities-add"),
     },
-    { text: "Role Mapping", icon: <SwapHoriz />, path: "/admin/roles/mapping" },
+    { text: "Role Mapping", icon: <SwapHoriz />, path: buildPath("/admin/dashboard/roles-mapping") },
   ];
 
   const drawer = (
@@ -87,9 +94,13 @@ export default function AdminLayout() {
           <Button
             color="inherit"
             onClick={() => {
-              logout();
-              navigate("/login");
-            }}
+  logout();
+  const parts = window.location.pathname.split("/").filter(Boolean);
+  const companySlug = parts[0];
+  const appSlug = parts[1];
+  navigate(`/${companySlug}/${appSlug}/login`);
+}}
+
             startIcon={<ExitToApp />}
           >
             Logout
