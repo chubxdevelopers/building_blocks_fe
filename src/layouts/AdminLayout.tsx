@@ -1,6 +1,6 @@
 import "@mui/material/styles";
 import { useState } from "react";
-import { Outlet, useNavigate, useLocation } from "react-router-dom";
+import { Outlet, useNavigate } from "react-router-dom";
 import {
   AppBar,
   Box,
@@ -31,7 +31,6 @@ const drawerWidth = 240;
 export default function AdminLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const navigate = useNavigate();
-  const location = useLocation();
   const { logout } = useAuth();
 
   const buildPath = (suffix: string) => {
