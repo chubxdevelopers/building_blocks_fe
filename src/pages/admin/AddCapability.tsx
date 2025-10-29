@@ -35,10 +35,11 @@ export default function AddCapability() {
     const fetchFeatures = async () => {
       try {
         // load features via admin GET; backend will expose /features (added server-side)
-        const response = await api.get<Feature[]>("/admin/features");
+        const response = await api.get<Feature[]>("/public/features");
         setFeatures(response.data || []);
       } catch (err: any) {
-        setError("Failed to load features");
+        setError(err.response?.data?.message || `Failed to load features `);
+        console.error(err);
       }
     };
     fetchFeatures();

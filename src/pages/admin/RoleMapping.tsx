@@ -46,13 +46,14 @@ export default function RoleMapping() {
       try {
         const [rolesResponse, capabilitiesResponse] = await Promise.all([
           // GET endpoints exposed on backend to list roles and capabilities
-          api.get("/admin/roles"),
-          api.get("/admin/capabilities"),
+          api.get("/public/roles"),
+          api.get("/public/capabilities"),
         ]);
         setRoles(rolesResponse.data || []);
         setCapabilities(capabilitiesResponse.data || []);
       } catch (err: any) {
-        setError("Failed to load data");
+        console.error(err);
+        setError("Failed to load data fe");
       }
     };
     fetchData();
