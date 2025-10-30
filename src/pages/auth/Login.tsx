@@ -7,14 +7,12 @@ import {
   TextField,
   Typography,
   Alert,
-  Link,
 } from "@mui/material";
 import { useFormik } from "formik";
 import * as yup from "yup";
-import { useNavigate, useLocation, Link as RouterLink } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import api, { buildFullApiUrl } from "../../utils/axiosConfig";
 import { useAuth } from "../../contexts/AuthContext";
-import { Cookie } from "@mui/icons-material";
 
 const validationSchema = yup.object({
   email: yup
@@ -28,8 +26,6 @@ export default function Login() {
   const [error, setError] = useState("");
   const { login } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
-  const from = location.state?.from?.pathname || "/";
 
   // If the current URL does not include company and app slugs, force the
   // user to pick a company/app first. This prevents posting to `/api/auth/...`

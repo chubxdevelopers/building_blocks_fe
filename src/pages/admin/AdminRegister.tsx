@@ -10,7 +10,7 @@ import {
 } from "@mui/material";
 import { useFormik } from "formik";
 import * as yup from "yup";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import api from "../../utils/axiosConfig";
 import { useAuth } from "../../contexts/AuthContext";
 
@@ -31,8 +31,6 @@ export default function AdminRegister() {
   const [success, setSuccess] = useState("");
   const { login } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
-  const from = location.state?.from?.pathname || "/admin";
 
   const formik = useFormik({
     initialValues: {
